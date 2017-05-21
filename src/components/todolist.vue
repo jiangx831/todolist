@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p>欢迎：{{userName}}! 您的待办事项是：</p>
+    <p>欢迎：{{name}}! 您的待办事项是：</p>
     <group>
       <x-input title="" v-model="todoItem" :show-clear="false" placeholder="请输入代办事项">
          <x-button slot="right" class= "btn" type="primary" mini @click.native="addTodoItem">添加</x-button>
@@ -30,6 +30,7 @@
 </template>
 <script>
   import { Group, XInput, Checker, CheckerItem, XButton } from 'vux';
+  import axios from 'axios';
 
   export default {
     components:{
@@ -51,7 +52,8 @@
             value: '已完成事项'
           }
         ],
-        userName: '',
+        name: '',
+        id: '',
         todoItem: '',
         todoList: [],
         doneList: [],
@@ -81,7 +83,24 @@
       reduceItem(index) {
         this.todoList.push(this.doneList[index]);
         this.doneList.splice(index, 1);
+      },
+      getUserName() {
+        return sessionStorage.getItem("name");
+      },
+      getUserId() {
+        return sessionStorage.getItem("id");
+      },
+      getList() {
+        const todoList = axios.get('/todolist?id=' + this.id).then((respones) => {
+          this.todoList = respones.data.todoList;
+          this.doneList = respones.data.doneList;
+        });
       }
+    },
+    created() {
+      this.name = this.getUserName();
+      this.id = this.getUserId();
+      this.getList();
     }
   }
 </script>

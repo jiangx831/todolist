@@ -11,6 +11,7 @@
 
 <script>
 import { Group, XButton, XInput } from 'vux';
+import axios from 'axios';
 
 export default {
   name: 'login',
@@ -28,7 +29,23 @@ export default {
   },
   methods: {
     loginToDo(){
-      this.$router.push({ path: 'todolist' });
+      const that = this;
+      // this.$router.push({ path: 'todolist' });
+      axios.post('/user', {
+        account: this.account,
+        password: this.password
+      })
+      .then(function (response) {
+        if(response.data.code){
+          sessionStorage.setItem("name", that.account);
+          //todo
+          sessionStorage.setItem("id", '12');
+          that.$router.push({ path: 'todolist' });
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
     }
   }
 }
