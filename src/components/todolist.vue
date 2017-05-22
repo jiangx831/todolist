@@ -11,18 +11,18 @@
     </checker>
     <ul v-if="done === 0">
       <li class="list-item" v-for="(item, index) in todoList">
-        <p>{{item}}</p>
+        <p>{{item.content}}</p>
         <div class="btn-group">
-          <x-button type="default" :mini="true" class="btn" action-type="button" @click.native="completeItem(index)">完成</x-button>
-          <x-button type="default" :mini="true" action-type="button" @click.native="delTodoItem(index)">删除</x-button>
+          <x-button type="default" :mini="true" class="btn" action-type="button" @click.native="completeItem(item.id)">完成</x-button>
+          <x-button type="default" :mini="true" action-type="button" @click.native="delTodoItem(item.id)">删除</x-button>
         </div>
       </li>
     </ul>
     <ul v-if="done === 1">
       <li class="list-item" v-for="(item, index) in doneList">
-        <p>{{item}}</p>
+        <p>{{item.content}}</p>
         <div class="btn-group">
-          <x-button type="default" :mini="true" class="btn" action-type="button" @click.native="reduceItem(index)">还原</x-button>
+          <x-button type="default" :mini="true" class="btn" action-type="button" @click.native="reduceItem(item.id)">还原</x-button>
         </div>
       </li>
     </ul>
@@ -55,9 +55,20 @@
         name: '',
         id: '',
         todoItem: '',
-        todoList: [],
-        doneList: [],
+        list: [],
         done:0
+      }
+    },
+    computed: {
+      todoList() {
+        return this.list.filter((item) => {
+          return item.status === 0;
+        })
+      },
+      doneList() {
+        return this.list.filter((item) => {
+          return item.status === 1;
+        })
       }
     },
     methods: {
@@ -70,19 +81,57 @@
         this.done =1;
       },
       addTodoItem(event) {
-        this.todoList.push(this.todoItem);
+        if(this.todoItem === ''){
+          return;
+        }
+        axios.post('addTodoList', {
+          id: this.id,
+          content: this.todoItem
+        }).then((respones)=>{
+          if(respones.data.code){
+            //重新获取数据，可以考虑todoItem.push
+            this.getList();
+          }
+        })
+        // this.todoList.push(this.todoItem);
         this.todoItem = '';
       },
-      completeItem(index) {
-        this.doneList.push(this.todoList[index]);
-        this.todoList.splice(index, 1);
+      completeItem(id) {
+        axios.post('/updataList', {
+          userId: this.id,
+          id: id,
+          status: 1
+        }).then((respones) => {
+          if (respones.data.code) {
+            this.getList();
+          }
+        });
+        // this.doneList.push(this.todoList[index]);
+        // this.todoList.splice(index, 1);
       },
-      delTodoItem(index) {
-        this.todoList.splice(index, 1);
+      delTodoItem(id) {
+        axios.post('/deleteTodo', {
+          userId: this.id,
+          id: id
+        }).then((respones) => {
+          if (respones.data.code) {
+            this.getList();
+          }
+        });
+        // this.todoList.splice(index, 1);
       },
-      reduceItem(index) {
-        this.todoList.push(this.doneList[index]);
-        this.doneList.splice(index, 1);
+      reduceItem(id) {
+        axios.post('/updataList', {
+          userId: this.id,
+          id: id,
+          status: 0
+        }).then((respones) => {
+          if (respones.data.code) {
+            this.getList();
+          }
+        });
+        // this.todoList.push(this.doneList[index]);
+        // this.doneList.splice(index, 1);
       },
       getUserName() {
         return sessionStorage.getItem("name");
@@ -91,9 +140,8 @@
         return sessionStorage.getItem("id");
       },
       getList() {
-        const todoList = axios.get('/todolist?id=' + this.id).then((respones) => {
-          this.todoList = respones.data.todoList;
-          this.doneList = respones.data.doneList;
+        axios.get('/todolist?id=' + this.id).then((respones) => {
+          this.list = respones.data;
         });
       }
     },

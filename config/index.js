@@ -28,15 +28,23 @@ module.exports = {
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
     proxyTable: {
-      '/user':{
+      '/user': {
         target: 'http://localhost:3000',
         changeOrigin: true
       },
-      '/todolist':{
+      '/todolist': {
         target: 'http://localhost:3000',
         changeOrigin: true
       },
-      '/api':{
+      '/addTodoList': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      },
+      '/deleteTodo': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      },
+      '/updataList': {
         target: 'http://localhost:3000',
         changeOrigin: true
       }
